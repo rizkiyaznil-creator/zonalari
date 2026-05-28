@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Zona Latihan Lari v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding-bottom: 2.5rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem 1.5rem 3.5rem;
+            text-align: center;
+        }
+
+        header .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        header p {
+            font-size: 0.88rem;
+            opacity: 0.85;
+        }
+
+        header .badge {
+            display: inline-block;
+            margin-top: 0.6rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        /* Input card */
+        .input-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: -1.75rem 1rem 1.25rem;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .field {
+            margin-bottom: 1.1rem;
+        }
+
+        .field:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .field-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .field-label span {
+            font-size: 0.78rem;
+            color: #888;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .btn-info {
+            background: #eef2ff;
+            color: #667eea;
+            border: none;
+            border-radius: 20px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-info:active {
+            background: #dde4ff;
+        }
+
+        /* Panduan RHR */
+        .rhr-guide {
+            display: none;
+            background: #f7f9ff;
+            border-left: 3px solid #667eea;
+            border-radius: 0 10px 10px 0;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.82rem;
+            color: #555;
+            line-height: 1.55;
+        }
+
+        .rhr-guide.open {
+            display: block;
+        }
+
+        .rhr-guide strong {
+            color: #333;
+        }
+
+        .rhr-guide .method {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .rhr-guide .method-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            outline: none;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #667eea;
+        }
+
+        input[type="number"]::placeholder {
+            color: #cbd5e0;
+            font-weight: 400;
+        }
+
+        .btn-hitung {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1.25rem;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-hitung:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .error-msg {
+            color: #e53e3e;
+            font-size: 0.82rem;
+            margin-top: 0.6rem;
+            display: none;
+        }
+
+        /* Result */
+        .result-section {
+            padding: 0 1rem;
+            display: none;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: white;
+            border-radius: 14px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        }
+
+        .stat-box .lbl {
+            font-size: 0.68rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: 700;
+        }
+
+        .stat-box .val {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #2d3748;
+            line-height: 1.15;
+        }
+
+        .stat-box .unit {
+            font-size: 0.72rem;
+            color: #aaa;
+        }
+
+        /* Zone cards */
+        .zone-card {
+            border-radius: 18px;
+            padding: 1.25rem 1.4rem;
+            margin-bottom: 0.75rem;
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zone-card::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .zone-left .zone-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.85;
+            margin-bottom: 0.15rem;
+        }
+
+        .zone-left .zone-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .zone-right {
+            text-align: right;
+        }
+
+        .zone-right .bpm {
+            font-size: 1.45rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .zone-right .pct {
+            font-size: 0.72rem;
+            opacity: 0.85;
+            margin-top: 0.15rem;
+        }
+
+        .zone-desc {
+            font-size: 0.84rem;
+            opacity: 0.92;
+            line-height: 1.45;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            padding-top: 0.6rem;
+        }
+
+        .z1 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .z2 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .z3 { background: linear-gradient(135deg, #f7971e, #ffd200); }
+        .z4 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .z5 { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+
+        footer {
+            text-align: center;
+            color: #bbb;
+            font-size: 0.73rem;
+            padding: 1.5rem 1rem 0;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="icon">🏃</div>
+    <h1>Zona Latihan Lari</h1>
+    <p>Zona detak jantung yang lebih personal</p>
+    <div class="badge">Tanaka + Karvonen</div>
+</header>
+
+<div class="input-card">
+
+    <div class="field">
+        <div class="field-label">
+            <span>Umurmu (tahun)</span>
+        </div>
+        <input type="number" id="age" placeholder="contoh: 28" min="10" max="100" inputmode="numeric">
+    </div>
+
+    <div class="field">
+        <div class="field-label">
+            <span>Resting Heart Rate (bpm)</span>
+            <button class="btn-info" onclick="toggleGuide()">Cara ukur ▾</button>
+        </div>
+
+        <div class="rhr-guide" id="rhrGuide">
+            <strong>Resting Heart Rate (RHR)</strong> adalah detak jantungmu saat benar-benar istirahat.
+            <div class="method">
+                <div class="method-icon">⌚</div>
+                <div><strong>Smartwatch/fitness tracker:</strong> Buka app kesehatan, cari "Resting Heart Rate" atau "Heart Rate" — biasanya diukur otomatis saat tidur.</div>
+            </div>
+            <div class="method">
+                <div class="method-icon">✋</div>
+                <div><strong>Manual:</strong> Segera setelah bangun tidur (sebelum beranjak), tempelkan 2 jari di pergelangan tangan bagian dalam. Hitung denyutan selama 60 detik.</div>
+            </div>
+            <div class="method">
+                <div class="method-icon">💡</div>
+                <div>Rata-rata orang dewasa: <strong>60–80 bpm</strong>. Atlet terlatih bisa di bawah 60 bpm.</div>
+            </div>
+        </div>
+
+        <input type="number" id="rhr" placeholder="contoh: 65" min="30" max="120" inputmode="numeric">
+    </div>
+
+    <button class="btn-hitung" onclick="hitung()">Hitung Zona Latihan</button>
+    <div class="error-msg" id="errorMsg"></div>
+
+</div>
+
+<div class="result-section" id="result">
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="lbl">HR Maksimal</div>
+            <div class="val" id="maxHrVal">—</div>
+            <div class="unit">bpm (Tanaka)</div>
+        </div>
+        <div class="stat-box">
+            <div class="lbl">HR Reserve</div>
+            <div class="val" id="hrrVal">—</div>
+            <div class="unit">bpm (HRR)</div>
+        </div>
+    </div>
+
+    <div id="zoneList"></div>
+
+</div>
+
+<footer>
+    Max HR: 208 − (0.7 × umur) &nbsp;•&nbsp; Zona: Metode Karvonen<br>
+    Hanya untuk referensi, bukan saran medis
+</footer>
+
+<script>
+    const zones = [
+        {
+            num: 1, emoji: '😌', name: 'Pemulihan', cls: 'z1',
+            minPct: 0.50, maxPct: 0.60,
+            desc: 'Sangat ringan. Cocok untuk pemanasan, pendinginan, atau hari istirahat aktif. Bisa ngobrol dengan santai.'
+        },
+        {
+            num: 2, emoji: '😊', name: 'Aerobik Dasar', cls: 'z2',
+            minPct: 0.60, maxPct: 0.70,
+            desc: 'Nyaman dan stabil. Zona terbaik untuk lari jarak jauh dan membangun fondasi kebugaran.'
+        },
+        {
+            num: 3, emoji: '🙂', name: 'Aerobik', cls: 'z3',
+            minPct: 0.70, maxPct: 0.80,
+            desc: 'Terasa menantang, napas mulai berat. Meningkatkan kapasitas paru-paru dan jantung secara efektif.'
+        },
+        {
+            num: 4, emoji: '😤', name: 'Threshold', cls: 'z4',
+            minPct: 0.80, maxPct: 0.90,
+            desc: 'Keras dan sulit berbicara lebih dari beberapa kata. Melatih kecepatan dan meningkatkan batas ketahanan.'
+        },
+        {
+            num: 5, emoji: '🔥', name: 'Maksimal', cls: 'z5',
+            minPct: 0.90, maxPct: 1.00,
+            desc: 'Upaya penuh! Hanya bisa dipertahankan dalam waktu singkat. Untuk sprint dan latihan kecepatan tertinggi.'
+        }
+    ];
+
+    function toggleGuide() {
+        const guide = document.getElementById('rhrGuide');
+        guide.classList.toggle('open');
+    }
+
+    function karvonen(hrr, rhr, pct) {
+        return Math.round(hrr * pct + rhr);
+    }
+
+    function hitung() {
+        const age = parseInt(document.getElementById('age').value);
+        const rhr = parseInt(document.getElementById('rhr').value);
+        const errorEl = document.getElementById('errorMsg');
+        const resultEl = document.getElementById('result');
+
+        if (!age || isNaN(age) || age < 10 || age > 100) {
+            errorEl.textContent = 'Masukkan umur yang valid (10–100 tahun).';
+            errorEl.style.display = 'block';
+            resultEl.style.display = 'none';
+            return;
+        }
+
+        if (!rhr || isNaN(rhr) || rhr < 30 || rhr > 120) {
+            errorEl.textContent = 'Masukkan resting heart rate yang valid (30–120 bpm).';
+            errorEl.style.display = 'block';
+            resultEl.style.display = 'none';
+            return;
+        }
+
+        if (rhr >= Math.round(208 - 0.7 * age)) {
+            errorEl.textContent = 'Resting heart rate tidak boleh lebih besar dari HR maksimal.';
+            errorEl.style.display = 'block';
+            resultEl.style.display = 'none';
+            return;
+        }
+
+        errorEl.style.display = 'none';
+
+        // Tanaka formula
+        const maxHR = Math.round(208 - 0.7 * age);
+        // Heart Rate Reserve
+        const hrr = maxHR - rhr;
+
+        document.getElementById('maxHrVal').textContent = maxHR;
+        document.getElementById('hrrVal').textContent = hrr;
+
+        const listEl = document.getElementById('zoneList');
+        listEl.innerHTML = '';
+
+        zones.forEach(z => {
+            const minBpm = karvonen(hrr, rhr, z.minPct);
+            const maxBpm = z.maxPct === 1.00 ? maxHR : karvonen(hrr, rhr, z.maxPct);
+
+            const card = document.createElement('div');
+            card.className = `zone-card ${z.cls}`;
+            card.innerHTML = `
+                <div class="zone-header">
+                    <div class="zone-left">
+                        <div class="zone-label">Zona ${z.num} ${z.emoji}</div>
+                        <div class="zone-name">${z.name}</div>
+                    </div>
+                    <div class="zone-right">
+                        <div class="bpm">${minBpm}–${maxBpm}</div>
+                        <div class="pct">${z.minPct * 100}–${z.maxPct * 100}% HRR</div>
+                    </div>
+                </div>
+                <div class="zone-desc">${z.desc}</div>
+            `;
+            listEl.appendChild(card);
+        });
+
+        resultEl.style.display = 'block';
+        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') hitung();
+    });
+</script>
+
+</body>
+</html>
