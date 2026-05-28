@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Zona Latihan Lari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding-bottom: 2.5rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem 1.5rem 3.5rem;
+            text-align: center;
+        }
+
+        header .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+
+        .input-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: -1.75rem 1rem 1.25rem;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .input-card label {
+            display: block;
+            font-size: 0.78rem;
+            color: #888;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.6rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .input-card input {
+            flex: 1;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            outline: none;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        .input-card input::-webkit-outer-spin-button,
+        .input-card input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .input-card input:focus {
+            border-color: #667eea;
+        }
+
+        .input-card input::placeholder {
+            color: #cbd5e0;
+            font-weight: 400;
+        }
+
+        .btn-hitung {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-hitung:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+
+        .error-msg {
+            color: #e53e3e;
+            font-size: 0.82rem;
+            margin-top: 0.6rem;
+            display: none;
+        }
+
+        /* Result section */
+        .result-section {
+            padding: 0 1rem;
+            display: none;
+        }
+
+        .max-hr-banner {
+            background: white;
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        }
+
+        .max-hr-banner .lbl {
+            font-size: 0.75rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .max-hr-banner .val {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #2d3748;
+            line-height: 1.1;
+        }
+
+        .max-hr-banner .unit {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        /* Zone cards */
+        .zone-card {
+            border-radius: 18px;
+            padding: 1.25rem 1.4rem;
+            margin-bottom: 0.75rem;
+            color: white;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zone-card::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .zone-left .zone-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.85;
+            margin-bottom: 0.15rem;
+        }
+
+        .zone-left .zone-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .zone-right {
+            text-align: right;
+        }
+
+        .zone-right .bpm {
+            font-size: 1.45rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .zone-right .pct {
+            font-size: 0.72rem;
+            opacity: 0.85;
+            margin-top: 0.15rem;
+        }
+
+        .zone-desc {
+            font-size: 0.84rem;
+            opacity: 0.92;
+            line-height: 1.45;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            padding-top: 0.6rem;
+            margin-top: 0.1rem;
+        }
+
+        .z1 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .z2 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .z3 { background: linear-gradient(135deg, #f7971e, #ffd200); }
+        .z4 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .z5 { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+
+        footer {
+            text-align: center;
+            color: #bbb;
+            font-size: 0.73rem;
+            padding: 1.5rem 1rem 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="icon">🏃</div>
+    <h1>Zona Latihan Lari</h1>
+    <p>Ketahui zona detak jantungmu saat berlatih</p>
+</header>
+
+<div class="input-card">
+    <label>Umurmu (tahun)</label>
+    <div class="input-row">
+        <input
+            type="number"
+            id="age"
+            placeholder="contoh: 28"
+            min="10"
+            max="100"
+            inputmode="numeric"
+        >
+        <button class="btn-hitung" onclick="hitung()">Hitung</button>
+    </div>
+    <div class="error-msg" id="errorMsg">Masukkan umur yang valid (10–100 tahun).</div>
+</div>
+
+<div class="result-section" id="result">
+
+    <div class="max-hr-banner">
+        <div class="lbl">Detak Jantung Maksimal</div>
+        <div class="val" id="maxHrVal">—</div>
+        <div class="unit">denyut per menit (bpm)</div>
+    </div>
+
+    <div id="zoneList"></div>
+
+</div>
+
+<footer>
+    Rumus: 220 − umur &nbsp;•&nbsp; Hanya untuk referensi, bukan saran medis
+</footer>
+
+<script>
+    const zones = [
+        {
+            num: 1,
+            emoji: '😌',
+            name: 'Pemulihan',
+            minPct: 0.50,
+            maxPct: 0.60,
+            cls: 'z1',
+            desc: 'Sangat ringan. Cocok untuk pemanasan, pendinginan, atau hari istirahat aktif. Bisa ngobrol dengan santai.'
+        },
+        {
+            num: 2,
+            emoji: '😊',
+            name: 'Aerobik Dasar',
+            minPct: 0.60,
+            maxPct: 0.70,
+            cls: 'z2',
+            desc: 'Nyaman dan stabil. Zona terbaik untuk lari jarak jauh dan membangun fondasi kebugaran.'
+        },
+        {
+            num: 3,
+            emoji: '🙂',
+            name: 'Aerobik',
+            minPct: 0.70,
+            maxPct: 0.80,
+            cls: 'z3',
+            desc: 'Terasa menantang, napas mulai berat. Meningkatkan kapasitas paru-paru dan jantung secara efektif.'
+        },
+        {
+            num: 4,
+            emoji: '😤',
+            name: 'Threshold',
+            minPct: 0.80,
+            maxPct: 0.90,
+            cls: 'z4',
+            desc: 'Keras dan sulit berbicara lebih dari beberapa kata. Melatih kecepatan dan meningkatkan batas ketahanan.'
+        },
+        {
+            num: 5,
+            emoji: '🔥',
+            name: 'Maksimal',
+            minPct: 0.90,
+            maxPct: 1.00,
+            cls: 'z5',
+            desc: 'Upaya penuh! Hanya bisa dipertahankan dalam waktu singkat. Untuk sprint dan latihan kecepatan tertinggi.'
+        }
+    ];
+
+    function hitung() {
+        const input = document.getElementById('age').value.trim();
+        const age = parseInt(input);
+        const errorEl = document.getElementById('errorMsg');
+        const resultEl = document.getElementById('result');
+
+        if (!input || isNaN(age) || age < 10 || age > 100) {
+            errorEl.style.display = 'block';
+            resultEl.style.display = 'none';
+            return;
+        }
+
+        errorEl.style.display = 'none';
+
+        const maxHR = 220 - age;
+        document.getElementById('maxHrVal').textContent = maxHR;
+
+        const listEl = document.getElementById('zoneList');
+        listEl.innerHTML = '';
+
+        zones.forEach(z => {
+            const minBpm = Math.round(z.minPct * maxHR);
+            const maxBpm = z.maxPct === 1.00
+                ? maxHR
+                : Math.round(z.maxPct * maxHR);
+
+            const card = document.createElement('div');
+            card.className = `zone-card ${z.cls}`;
+            card.innerHTML = `
+                <div class="zone-header">
+                    <div class="zone-left">
+                        <div class="zone-label">Zona ${z.num} ${z.emoji}</div>
+                        <div class="zone-name">${z.name}</div>
+                    </div>
+                    <div class="zone-right">
+                        <div class="bpm">${minBpm}–${maxBpm}</div>
+                        <div class="pct">${z.minPct * 100}–${z.maxPct * 100}% maks</div>
+                    </div>
+                </div>
+                <div class="zone-desc">${z.desc}</div>
+            `;
+            listEl.appendChild(card);
+        });
+
+        resultEl.style.display = 'block';
+        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.getElementById('age').addEventListener('keydown', e => {
+        if (e.key === 'Enter') hitung();
+    });
+</script>
+
+</body>
+</html>
