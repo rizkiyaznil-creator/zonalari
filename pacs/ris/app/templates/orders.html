@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block judul %}Order{% endblock %}
+{% set halaman = 'order' %}
+
+{% block isi %}
+<h2>Order Pemeriksaan</h2>
+
+{% if pesan %}<div class="pesan pesan--ok">{{ pesan }}</div>{% endif %}
+{% if galat %}<div class="pesan pesan--galat">{{ galat }}</div>{% endif %}
+
+<div class="kisi kisi--2" style="margin-bottom:18px;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Buat order baru</div>
+    <div class="rscpl-card__body">
+      <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:12px;">
+        Accession number diterbitkan otomatis saat order dibuat. Nomor inilah yang nanti
+        dituliskan ke berkas DICOM dan dipakai SATUSEHAT.
+      </p>
+      <form method="post" action="/order">
+        <div class="bidang">
+          <label class="rscpl-label" for="patient_mrn">Nomor rekam medis <span class="rscpl-badge rscpl-badge--required">wajib</span></label>
+          <input class="rscpl-input" id="patient_mrn" name="patient_mrn" required>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="patient_name">Nama pasien <span class="rscpl-badge rscpl-badge--required">wajib</span></label>
+          <input class="rscpl-input" id="patient_name" name="patient_name" required>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="patient_birth_date">Tanggal lahir</label>
+          <input class="rscpl-input" id="patient_birth_date" name="patient_birth_date" type="date">
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="patient_sex">Jenis kelamin</label>
+          <select class="rscpl-input" id="patient_sex" name="patient_sex">
+            <option value="">—</option>
+            <option value="M">Laki-laki</option>
+            <option value="F">Perempuan</option>
+          </select>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="modality">Modalitas <span class="rscpl-badge rscpl-badge--required">wajib</span></label>
+          <select class="rscpl-input" id="modality" name="modality" required>
+            {% for m in modalitas %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="study_description">Jenis pemeriksaan</label>
+          <input class="rscpl-input" id="study_description" name="study_description" placeholder="mis. Thorax PA">
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="referring_clinician">Dokter pengirim</label>
+          <input class="rscpl-input" id="referring_clinician" name="referring_clinician">
+        </div>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Buat order</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Impor order dari SIMRS (CSV)</div>
+    <div class="rscpl-card__body">
+      <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:12px;">
+        Selama SIMRS belum tersambung langsung, ekspor daftar order harian ke CSV lalu
+        unggah di sini. Kolom yang dibaca:
+        <code>accession_number</code> (boleh kosong), <code>patient_mrn</code>,
+        <code>patient_name</code>, <code>modality</code>, <code>study_description</code>,
+        <code>patient_birth_date</code> (YYYY-MM-DD), <code>patient_sex</code>,
+        <code>referring_clinician</code>.
+      </p>
+      <form method="post" action="/order/impor-csv" enctype="multipart/form-data">
+        <div class="bidang">
+          <input class="rscpl-input" type="file" name="berkas" accept=".csv,text/csv" required>
+        </div>
+        <button class="rscpl-btn rscpl-btn--outline" type="submit">Impor CSV</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="rscpl-card">
+  <div class="rscpl-card__head">Daftar order</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead>
+        <tr><th>Accession</th><th>Pasien</th><th>Modalitas</th><th>Pemeriksaan</th>
+            <th>Sumber</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for o in orders %}
+        <tr>
+          <td>{{ o.accession_number }}</td>
+          <td><strong>{{ o.patient_name }}</strong><br><span class="alasan">RM {{ o.patient_mrn }}</span></td>
+          <td>{{ o.modality }}</td>
+          <td>{{ o.study_description or '-' }}</td>
+          <td><span class="pil pil--netral">{{ o.source|source_label }}</span></td>
+          <td>
+            {% if o.status == 'pending' %}<span class="pil pil--belum">{{ o.status|status_label }}</span>
+            {% elif o.status == 'matched' %}<span class="pil pil--ok">{{ o.status|status_label }}</span>
+            {% else %}<span class="pil pil--tolak">{{ o.status|status_label }}</span>{% endif %}
+          </td>
+          <td>
+            {% if o.status == 'pending' %}
+            <form class="sebaris" method="post" action="/order/{{ o.id }}/batal">
+              <button class="rscpl-btn rscpl-btn--ghost" type="submit">Batalkan</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="kosong">Belum ada order.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block judul %}Unggah Citra{% endblock %}
+{% set halaman = 'unggah' %}
+
+{% block isi %}
+<h2>Unggah Citra DICOM</h2>
+
+{% if hasil %}
+  <div class="pesan {% if hasil.gagal %}pesan--galat{% else %}pesan--ok{% endif %}">
+    {{ hasil.berhasil }} berkas masuk ke arsip ({{ hasil.jumlah_study }} pemeriksaan).
+    {% if hasil.gagal %}
+      <br>{{ hasil.gagal|length }} berkas dilewati:
+      <ul style="margin:6px 0 0 18px;font-weight:500;">
+        {% for g in hasil.gagal[:12] %}<li>{{ g }}</li>{% endfor %}
+        {% if hasil.gagal|length > 12 %}<li>… dan {{ hasil.gagal|length - 12 }} lainnya</li>{% endif %}
+      </ul>
+    {% endif %}
+    {% if hasil.jumlah_study %}
+      <br><a href="/kotak-masuk">Lanjut ke kotak masuk untuk mencocokkan</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="rscpl-card" style="max-width:640px;">
+  <div class="rscpl-card__head">Pilih berkas</div>
+  <div class="rscpl-card__body">
+    <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:14px;">
+      Untuk CD pasien rujukan, pilih seluruh isi folder <code>DICOM</code> pada CD.
+      Berkas yang bukan DICOM (DICOMDIR, autorun, viewer bawaan) otomatis dilewati.
+      Citra yang diunggah tetap masuk karantina dan harus dicocokkan dengan order.
+    </p>
+    <form method="post" action="/unggah" enctype="multipart/form-data">
+      <div class="bidang">
+        <input class="rscpl-input" type="file" name="berkas" multiple required>
+      </div>
+      <button class="rscpl-btn rscpl-btn--primary" type="submit">Unggah</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

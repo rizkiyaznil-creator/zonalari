@@ -1,0 +1,11 @@
+# Rahasia dan data lokal — jangan pernah masuk ke git.
+.env
+data/
+*.dcm
+
+# Sertifikat proxy khusus lingkungan pengembangan
+*/certs/*.crt
+
+# Sampah Python
+__pycache__/
+*.py[cod]

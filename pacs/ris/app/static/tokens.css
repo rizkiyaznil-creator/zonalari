@@ -1,0 +1,79 @@
+/* ============================================================================
+   RS CPL USU — DESIGN TOKENS
+   Rumah Sakit Pendidikan Prof. Dr. Chairuddin P. Lubis · Universitas Sumatera Utara
+   Identitas hangat, light-committed (cream + coral).
+   Drop-in: paste :root ke stylesheet Anda, lalu pakai var(--rscpl-*).
+   ========================================================================== */
+:root{
+  color-scheme: light;
+
+  /* — Grounds — */
+  --rscpl-cream:        #FCF5E8;  /* latar halaman */
+  --rscpl-surface:      #FFFDF8;  /* header / permukaan terangkat */
+  --rscpl-card:         #FFFFFF;  /* kartu */
+  --rscpl-cream-soft:   #FBEEDD;  /* isian halus */
+  --rscpl-tint:         #FDF3EC;  /* isian hover */
+
+  /* — Coral (primary / accent) — */
+  --rscpl-coral:        #E8674C;  /* utama */
+  --rscpl-coral-600:    #D9573F;  /* hover / emphasis / tagline script */
+  --rscpl-coral-100:    #FBE3DA;  /* latar terang */
+  --rscpl-coral-200:    #F6D2C6;
+  --rscpl-coral-border: #F2C7BB;  /* garis outline tombol */
+  --rscpl-coral-grad:   linear-gradient(135deg,#E8674C,#D9573F);           /* header kartu/tombol */
+  --rscpl-hero-grad:    linear-gradient(90deg,#E8674C 0%,#F0A692 55%,#FBEEDD 100%); /* banner "WHY?" */
+
+  /* — Teks / garis — */
+  --rscpl-ink:          #2C2A28;  /* teks utama (near-black hangat) */
+  --rscpl-muted:        #8C8178;  /* teks sekunder */
+  --rscpl-line:         #EADFCC;  /* border netral hangat */
+
+  /* — Semantik (TERPISAH dari accent) — */
+  --rscpl-danger:       #DC3545;  /* wajib / error / reset */
+  --rscpl-danger-600:   #BD2130;
+  --rscpl-ok:           #1E7E34;  /* sukses (pakai hemat) */
+  --rscpl-warn:         #E0A106;  /* peringatan (pakai hemat) */
+
+  /* — Tipografi — */
+  --rscpl-sans:  "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --rscpl-serif: Georgia, "Times New Roman", serif;  /* aksen tagline gaya script */
+
+  /* — Bentuk — */
+  --rscpl-radius: 10px;
+  --rscpl-shadow: 0 6px 18px -14px rgba(217,87,63,.30);
+}
+
+/* ============================================================================
+   KOMPONEN STARTER (opsional) — pakai kelas .rscpl-* atau salin pola CSS-nya.
+   ========================================================================== */
+.rscpl-page      { background:var(--rscpl-cream); color:var(--rscpl-ink); font-family:var(--rscpl-sans); }
+
+.rscpl-card      { background:var(--rscpl-card); border:1px solid var(--rscpl-line);
+                   border-radius:var(--rscpl-radius); overflow:hidden; box-shadow:var(--rscpl-shadow); }
+.rscpl-card__head{ background:var(--rscpl-coral-grad); color:#fff; padding:11px 18px; font-weight:700;
+                   display:flex; align-items:center; gap:8px; }
+.rscpl-card__body{ padding:16px; }
+
+.rscpl-btn       { font-family:inherit; font-weight:700; font-size:13px; padding:10px 16px;
+                   border-radius:9px; border:1.5px solid transparent; cursor:pointer;
+                   display:inline-flex; align-items:center; gap:7px; transition:.15s; }
+.rscpl-btn--primary { background:var(--rscpl-coral); color:#fff; }
+.rscpl-btn--primary:hover { background:var(--rscpl-coral-600); }
+.rscpl-btn--outline { background:#fff; color:var(--rscpl-coral-600); border-color:var(--rscpl-coral-border); }
+.rscpl-btn--outline:hover { background:var(--rscpl-coral-100); }
+.rscpl-btn--ghost   { background:transparent; color:var(--rscpl-muted); border-color:var(--rscpl-line); }
+.rscpl-btn--danger  { background:#fff; color:var(--rscpl-danger-600); border-color:#EECBC3; }
+
+.rscpl-input     { font-family:inherit; font-size:13px; padding:9px 11px; width:100%;
+                   border:1.5px solid var(--rscpl-line); border-radius:8px; background:#fff; color:var(--rscpl-ink); }
+.rscpl-input:focus { outline:none; border-color:var(--rscpl-coral); box-shadow:0 0 0 3px rgba(232,103,76,.18); }
+
+.rscpl-label     { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6B615A; }
+.rscpl-badge     { background:var(--rscpl-coral-100); color:var(--rscpl-coral-600);
+                   font-size:.72em; font-weight:700; padding:1px 7px; border-radius:10px; letter-spacing:.03em; }
+.rscpl-badge--required { background:var(--rscpl-danger); color:#fff; }
+
+.rscpl-tagline   { font-family:var(--rscpl-serif); font-style:italic; color:var(--rscpl-coral-600); }
+
+/* Aksen banner (echo band "WHY?") */
+.rscpl-hero      { background:var(--rscpl-hero-grad); color:#fff; padding:20px 24px; border-radius:var(--rscpl-radius); }

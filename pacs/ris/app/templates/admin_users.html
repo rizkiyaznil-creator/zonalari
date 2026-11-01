@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block judul %}Pengguna{% endblock %}
+{% set halaman = 'pengguna' %}
+
+{% block isi %}
+<h2>Pengguna Sistem</h2>
+
+{% if pesan %}<div class="pesan pesan--ok">{{ pesan }}</div>{% endif %}
+{% if galat %}<div class="pesan pesan--galat">{{ galat }}</div>{% endif %}
+
+<div class="kisi kisi--2">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Tambah pengguna</div>
+    <div class="rscpl-card__body">
+      <form method="post" action="/admin/pengguna">
+        <div class="bidang">
+          <label class="rscpl-label" for="username">Nama pengguna</label>
+          <input class="rscpl-input" id="username" name="username" required>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="full_name">Nama lengkap</label>
+          <input class="rscpl-input" id="full_name" name="full_name" required>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="role">Peran</label>
+          <select class="rscpl-input" id="role" name="role" required>
+            {% for r in peran %}<option value="{{ r }}">{{ role_labels[r] }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="password">Kata sandi (minimal 8 karakter)</label>
+          <input class="rscpl-input" id="password" name="password" type="password" minlength="8" required>
+        </div>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Tambah</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Kewenangan tiap peran</div>
+    <div class="rscpl-card__body" style="font-size:12.5px;">
+      <p style="margin-bottom:8px;"><strong>Administrator</strong> — kelola pengguna, lihat jejak audit, seluruh akses.</p>
+      <p style="margin-bottom:8px;"><strong>Radiografer</strong> — buat order, kotak masuk, cocokkan identitas, unggah citra.</p>
+      <p style="margin-bottom:8px;"><strong>Dokter Radiolog</strong> — baca pemeriksaan terverifikasi dan tulis ekspertise.</p>
+      <p><strong>Dokter Pengirim</strong> — baca pemeriksaan terverifikasi saja. Tidak melihat citra yang masih di karantina.</p>
+    </div>
+  </div>
+</div>
+
+<div class="rscpl-card" style="margin-top:18px;">
+  <div class="rscpl-card__head">Daftar pengguna</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead><tr><th>Nama pengguna</th><th>Nama lengkap</th><th>Peran</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for p in pengguna %}
+        <tr>
+          <td>{{ p.username }}</td>
+          <td>{{ p.full_name }}</td>
+          <td>{{ p.role_label }}</td>
+          <td>
+            {% if p.is_active %}<span class="pil pil--ok">Aktif</span>
+            {% else %}<span class="pil pil--tolak">Nonaktif</span>{% endif %}
+          </td>
+          <td>
+            {% if p.id != user.id %}
+            <form class="sebaris" method="post" action="/admin/pengguna/{{ p.id }}/nonaktif">
+              <button class="rscpl-btn rscpl-btn--ghost" type="submit">
+                {% if p.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

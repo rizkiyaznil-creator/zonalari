@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block judul %}{{ study.patient_name or 'Pemeriksaan' }}{% endblock %}
+{% set halaman = 'study' %}
+
+{% block isi %}
+<h2>{{ study.patient_name or study.original_patient_name or '(tanpa nama)' }}</h2>
+
+{% if study.status == 'unverified' %}
+<div class="pesan pesan--galat">
+  Identitas pemeriksaan ini <strong>belum diverifikasi</strong>. Jangan dipakai untuk
+  mengambil keputusan klinis sebelum dicocokkan dengan order.
+</div>
+{% elif study.status == 'rejected' %}
+<div class="pesan pesan--galat">
+  Ditandai bukan pemeriksaan pasien. Alasan: {{ study.rejected_reason or '-' }}
+</div>
+{% endif %}
+
+<div class="kisi kisi--2" style="margin-bottom:18px;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Identitas pasien</div>
+    <div class="rscpl-card__body">
+      <dl class="identitas" style="grid-template-columns:1fr;">
+        <div>
+          <dt>Nama</dt><dd>{{ study.patient_name or '-' }}</dd>
+          <dt>Nomor rekam medis</dt><dd>{{ study.patient_id or '-' }}</dd>
+          <dt>Accession number</dt><dd>{{ study.accession_number or '-' }}</dd>
+          <dt>Status</dt>
+          <dd>
+            {% if study.status == 'verified' %}<span class="pil pil--ok">{{ study.status|status_label }}</span>
+            {% elif study.status == 'unverified' %}<span class="pil pil--belum">{{ study.status|status_label }}</span>
+            {% else %}<span class="pil pil--tolak">{{ study.status|status_label }}</span>{% endif %}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Pemeriksaan</div>
+    <div class="rscpl-card__body">
+      <dl class="identitas" style="grid-template-columns:1fr;">
+        <div>
+          <dt>Modalitas</dt><dd>{{ study.modality or '-' }}</dd>
+          <dt>Tanggal</dt><dd>{{ study.study_date|tanggal_dicom }}</dd>
+          <dt>Uraian</dt><dd>{{ study.study_description or '-' }}</dd>
+          <dt>Jumlah citra</dt><dd>{{ study.instance_count }} berkas dalam {{ study.series_count }} seri</dd>
+        </div>
+      </dl>
+      {% if url_viewer %}
+        <a class="rscpl-btn rscpl-btn--primary" style="margin-top:12px;"
+           href="{{ url_viewer }}" target="_blank" rel="noopener" id="tombol-viewer">
+          Buka citra di viewer
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if user.role in ['admin', 'radiografer'] %}
+<div class="rscpl-card">
+  <div class="rscpl-card__head">Jejak identitas</div>
+  <div class="rscpl-card__body">
+    <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:12px;">
+      Nilai yang diketik petugas di konsol alat disimpan permanen agar perubahan
+      identitas selalu bisa ditelusuri.
+    </p>
+    <dl class="identitas">
+      <div>
+        <dt>Sebelum verifikasi — dari alat</dt>
+        <dd>{{ study.original_patient_name or '(kosong)' }}</dd>
+        <dt>ID dari alat</dt>
+        <dd>{{ study.original_patient_id or '(kosong)' }}</dd>
+        <dt>Masuk lewat</dt>
+        <dd>{{ study.ingest_source|source_label }}</dd>
+      </div>
+      <div>
+        <dt>Setelah verifikasi</dt>
+        <dd>{{ study.patient_name or '(belum)' }}</dd>
+        <dt>Diverifikasi oleh</dt>
+        <dd>{% if study.verified_by %}{{ study.verified_by.full_name }}{% else %}(belum){% endif %}</dd>
+        <dt>Waktu verifikasi</dt>
+        <dd>{% if study.verified_at %}{{ study.verified_at.strftime('%d-%m-%Y %H:%M') }}{% else %}(belum){% endif %}</dd>
+      </div>
+    </dl>
+    <p style="margin-top:12px;font-size:11px;color:var(--rscpl-muted);">
+      Study Instance UID: <code>{{ study.study_instance_uid }}</code>
+    </p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

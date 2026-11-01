@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block judul %}Kotak Masuk{% endblock %}
+{% set halaman = 'kotak-masuk' %}
+
+{% block isi %}
+<h2>Kotak Masuk — Citra Menunggu Verifikasi</h2>
+
+{% if not ada_order %}
+<div class="pesan pesan--galat">
+  Belum ada order yang menunggu. Citra tidak bisa diverifikasi tanpa order,
+  karena accession number harus berasal dari order. <a href="/order">Buat order lebih dulu</a>.
+</div>
+{% endif %}
+
+<div class="rscpl-card">
+  <div class="rscpl-card__head">{{ studies|length }} pemeriksaan di karantina</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead>
+        <tr>
+          <th>Diterima</th>
+          <th>Identitas dari alat</th>
+          <th>Modalitas</th>
+          <th>Tanggal periksa</th>
+          <th class="angka">Citra</th>
+          <th>Sumber</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in studies %}
+        <tr>
+          <td>{{ s.received_at.strftime('%d-%m-%Y %H:%M') }}</td>
+          <td>
+            <strong>{{ s.original_patient_name or '(tanpa nama)' }}</strong><br>
+            <span class="alasan">ID diketik: {{ s.original_patient_id or '(kosong)' }}</span>
+          </td>
+          <td>{{ s.modality or '-' }}</td>
+          <td>{{ s.study_date|tanggal_dicom }}</td>
+          <td class="angka">{{ s.instance_count }}</td>
+          <td><span class="pil pil--netral">{{ s.ingest_source|source_label }}</span></td>
+          <td><a class="rscpl-btn rscpl-btn--primary" href="/kotak-masuk/{{ s.id }}">Cocokkan</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="kosong">Tidak ada citra yang menunggu verifikasi.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

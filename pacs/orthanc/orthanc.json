@@ -1,0 +1,65 @@
+{
+  "Name": "PACS RS USU",
+
+  // --- Penyimpanan ---------------------------------------------------------
+  // Indeks (metadata) disimpan di PostgreSQL, sedangkan berkas DICOM tetap
+  // sebagai file di disk. Dipilih begini supaya basis data tetap kecil dan
+  // arsip citra bisa di-backup dengan perkakas file biasa.
+  "StorageDirectory": "/var/lib/orthanc/db",
+  "IndexDirectory": "/var/lib/orthanc/db",
+
+  "PostgreSQL": {
+    "EnableIndex": true,
+    "EnableStorage": false,
+    "Host": "postgres",
+    "Port": 5432,
+    "Database": "orthanc"
+    // Username dan Password diisi lewat variabel lingkungan ORTHANC__POSTGRESQL__*
+  },
+
+  // --- Antarmuka HTTP ------------------------------------------------------
+  // Orthanc tidak pernah diekspos langsung ke jaringan RS: satu-satunya jalan
+  // masuk adalah Caddy, yang memeriksa sesi login lebih dulu. Karena itu
+  // autentikasi internal Orthanc dimatikan — perlindungannya ada di lapisan proxy.
+  "HttpPort": 8042,
+  "AuthenticationEnabled": false,
+  "RemoteAccessAllowed": true,
+
+  // --- Antarmuka DICOM -----------------------------------------------------
+  // Port inilah yang dituju alat radiologi saat mengirim citra (C-STORE).
+  "DicomPort": 4242,
+  "DicomAet": "RSUSUPACS",
+
+  // Alat lama sering mengirim dengan Called AE Title yang tidak bisa kita ubah
+  // (karena konfigurasi alat tidak boleh disentuh). Dua opsi di bawah membuat
+  // Orthanc tetap menerima kiriman apa pun AE Title-nya — inilah yang
+  // memungkinkan "ambil alih IP/AE tujuan lama" tanpa intervensi vendor alat.
+  "DicomCheckCalledAet": false,
+  "DicomAlwaysAllowEcho": true,
+  "DicomAlwaysAllowStore": true,
+  "UnknownSopClassAccepted": true,
+
+  // --- Deteksi study selesai ----------------------------------------------
+  // Study dianggap "stabil" setelah sekian detik tanpa instance baru masuk.
+  // RIS memantau peristiwa StableStudy untuk memindahkan study ke kotak masuk.
+  // Nilai produksi yang wajar 60 detik; 10 dipakai agar demo tidak lama menunggu.
+  "StableAge": 10,
+
+  // --- Plugin --------------------------------------------------------------
+  "DicomWeb": {
+    "Enable": true,
+    "Root": "/dicom-web/",
+    "EnableWado": true,
+    "WadoRoot": "/wado"
+  },
+
+  // Viewer OHIF diaktifkan lewat variabel lingkungan OHIF_PLUGIN_ENABLED pada
+  // docker-compose.yml, dan mengambil citra lewat DICOMweb di atas.
+
+  "KeepAlive": true,
+
+  // Kiriman ulang dengan SOPInstanceUID yang sama tidak menimpa berkas yang
+  // sudah tersimpan. Alat radiologi kerap mengirim ulang pemeriksaan yang sama,
+  // dan berkas yang sudah ada di arsip tidak boleh tertimpa diam-diam.
+  "OverwriteInstances": false
+}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block judul %}Cocokkan Citra{% endblock %}
+{% set halaman = 'kotak-masuk' %}
+
+{% block isi %}
+<h2>Cocokkan Citra dengan Order</h2>
+
+{% if galat %}<div class="pesan pesan--galat">{{ galat }}</div>{% endif %}
+
+<div class="pesan pesan--ingat">
+  Periksa dengan teliti. Setelah dicocokkan, nomor rekam medis, nama, dan accession number
+  pada berkas DICOM akan ditulis ulang mengikuti order yang Anda pilih. Nilai asli tetap
+  disimpan dan perubahan ini tercatat dalam jejak audit atas nama Anda.
+</div>
+
+<div class="kisi kisi--2" style="margin-bottom:18px;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Identitas apa adanya dari alat</div>
+    <div class="rscpl-card__body">
+      <dl class="identitas" style="grid-template-columns:1fr;">
+        <div>
+          <dt>Nama diketik petugas</dt>
+          <dd>{{ study.original_patient_name or '(kosong)' }}</dd>
+          <dt>ID diketik petugas</dt>
+          <dd>{{ study.original_patient_id or '(kosong)' }}</dd>
+          <dt>Accession number</dt>
+          <dd>{{ study.accession_number or '(tidak ada — alat tidak menerima worklist)' }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Keterangan pemeriksaan</div>
+    <div class="rscpl-card__body">
+      <dl class="identitas" style="grid-template-columns:1fr;">
+        <div>
+          <dt>Modalitas</dt><dd>{{ study.modality or '-' }}</dd>
+          <dt>Tanggal periksa</dt><dd>{{ study.study_date|tanggal_dicom }}</dd>
+          <dt>Uraian</dt><dd>{{ study.study_description or '-' }}</dd>
+          <dt>Jumlah citra</dt><dd>{{ study.instance_count }} berkas dalam {{ study.series_count }} seri</dd>
+          <dt>Masuk lewat</dt><dd>{{ study.ingest_source|source_label }}</dd>
+        </div>
+      </dl>
+      <a class="rscpl-btn rscpl-btn--outline" style="margin-top:12px;"
+         href="/ohif/viewer?StudyInstanceUIDs={{ study.study_instance_uid }}" target="_blank" rel="noopener">
+        Lihat citra sebelum mencocokkan
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="rscpl-card" style="margin-bottom:18px;">
+  <div class="rscpl-card__head">Order yang paling mungkin cocok</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead>
+        <tr>
+          <th>Kecocokan</th><th>Pasien</th><th>Accession</th>
+          <th>Modalitas</th><th>Pemeriksaan</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in saran %}
+        <tr>
+          <td>
+            <span class="skor">{{ s.score }}</span><br>
+            <span class="alasan">{{ s.reasons|join(', ') or 'tidak ada kesamaan menonjol' }}</span>
+          </td>
+          <td>
+            <strong>{{ s.order.patient_name }}</strong><br>
+            <span class="alasan">RM {{ s.order.patient_mrn }}</span>
+          </td>
+          <td>{{ s.order.accession_number }}</td>
+          <td>{{ s.order.modality }}</td>
+          <td>{{ s.order.study_description or '-' }}</td>
+          <td>
+            <form method="post" action="/kotak-masuk/{{ study.id }}/verifikasi">
+              <input type="hidden" name="order_id" value="{{ s.order.id }}">
+              <button class="rscpl-btn rscpl-btn--primary" type="submit">Pilih order ini</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="kosong">
+          Tidak ada order yang menunggu. <a href="/order">Buat order lebih dulu</a>.
+        </td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="kisi kisi--2">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Pilih order lain secara manual</div>
+    <div class="rscpl-card__body">
+      <form method="post" action="/kotak-masuk/{{ study.id }}/verifikasi">
+        <div class="bidang">
+          <label class="rscpl-label" for="order_id">Order</label>
+          <select class="rscpl-input" id="order_id" name="order_id" required>
+            <option value="">— pilih order —</option>
+            {% for o in order_lain %}
+              <option value="{{ o.id }}">{{ o.patient_name }} · RM {{ o.patient_mrn }} · {{ o.modality }} · {{ o.accession_number }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Cocokkan</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Bukan pemeriksaan pasien</div>
+    <div class="rscpl-card__body">
+      <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:10px;">
+        Untuk uji alat, salah kirim, atau citra rusak. Berkas tidak dihapus — hanya
+        dikeluarkan dari antrean verifikasi.
+      </p>
+      <form method="post" action="/kotak-masuk/{{ study.id }}/tolak">
+        <div class="bidang">
+          <label class="rscpl-label" for="alasan">Alasan</label>
+          <input class="rscpl-input" id="alasan" name="alasan" required
+                 placeholder="mis. uji kalibrasi alat">
+        </div>
+        <button class="rscpl-btn rscpl-btn--danger" type="submit">Tandai bukan pemeriksaan</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

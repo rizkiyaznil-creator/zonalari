@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block judul %}Beranda{% endblock %}
+{% set halaman = 'beranda' %}
+
+{% block isi %}
+<h2>Ringkasan Hari Ini</h2>
+
+{% if not orthanc_hidup %}
+<div class="pesan pesan--galat">
+  Arsip DICOM (Orthanc) tidak terjangkau. Citra baru dari alat radiologi tidak akan masuk
+  sampai layanan ini kembali hidup. Hubungi petugas IT.
+</div>
+{% endif %}
+
+<div class="kisi kisi--3" style="margin-bottom:22px;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Menunggu Verifikasi</div>
+    <div class="rscpl-card__body">
+      <div class="angka-besar">{{ belum_verifikasi }}
+        <small>citra di karantina, belum boleh dibaca di poli</small>
+      </div>
+      {% if user.role in ['admin', 'radiografer'] and belum_verifikasi %}
+        <a class="rscpl-btn rscpl-btn--primary" href="/kotak-masuk" style="margin-top:12px;">Buka kotak masuk</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Order Menunggu Citra</div>
+    <div class="rscpl-card__body">
+      <div class="angka-besar">{{ order_menunggu }}
+        <small>pemeriksaan sudah dipesan, citranya belum masuk</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Terverifikasi</div>
+    <div class="rscpl-card__body">
+      <div class="angka-besar">{{ terverifikasi }}
+        <small>sudah jadi rekam medis dan tampil di poli</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if statistik_arsip %}
+<div class="rscpl-card">
+  <div class="rscpl-card__head">Arsip DICOM</div>
+  <div class="rscpl-card__body">
+    <div class="kisi kisi--3">
+      <div><span class="rscpl-label">Pasien</span><div class="angka-besar" style="font-size:24px;">{{ statistik_arsip.CountPatients }}</div></div>
+      <div><span class="rscpl-label">Pemeriksaan</span><div class="angka-besar" style="font-size:24px;">{{ statistik_arsip.CountStudies }}</div></div>
+      <div><span class="rscpl-label">Berkas citra</span><div class="angka-besar" style="font-size:24px;">{{ statistik_arsip.CountInstances }}</div></div>
+      <div><span class="rscpl-label">Ruang terpakai</span><div class="angka-besar" style="font-size:24px;">{{ statistik_arsip.TotalDiskSizeMB }} MB</div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="pesan pesan--ingat" style="margin-top:22px;">
+  <strong>Mengapa ada langkah verifikasi?</strong><br>
+  Alat radiologi di RS ini tidak menerima daftar kerja (worklist) dari sistem, sehingga
+  identitas pasien diketik manual di konsol alat dan citra tiba tanpa nomor order.
+  Verifikasi mencocokkan citra dengan order yang sah, lalu menuliskan nomor rekam medis
+  dan accession number yang benar ke dalam berkas DICOM. Tanpa langkah ini, data tidak
+  memenuhi syarat pengiriman ke SATUSEHAT.
+</div>
+{% endblock %}

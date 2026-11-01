@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block judul %}PACS{% endblock %} · {{ hospital_name }}</title>
+  <link rel="stylesheet" href="/static/tokens.css">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+<header class="rscpl-header">
+  <div class="rscpl-brand">
+    <h1><span class="mark">⚕</span> PACS &amp; RIS Radiologi</h1>
+    <p>{{ hospital_name }}</p>
+    <span class="rscpl-tagline">Quality, Safety and Friendly Hospital</span>
+  </div>
+  <div class="rscpl-logos">
+    <img src="/static/img/logo-usu.png" alt="Universitas Sumatera Utara">
+    <img src="/static/img/logo-rs-cpl.png" alt="RS Prof. Dr. Chairuddin P. Lubis">
+    <img src="/static/img/logo-era-excellence.png" alt="The Era of Ultimate Excellence">
+  </div>
+</header>
+
+{% if user %}
+<nav>
+  <a href="/" class="{% if halaman == 'beranda' %}aktif{% endif %}">Beranda</a>
+  <a href="/study" class="{% if halaman == 'study' %}aktif{% endif %}">Daftar Pasien</a>
+  {% if user.role in ['admin', 'radiografer'] %}
+    <a href="/kotak-masuk" class="{% if halaman == 'kotak-masuk' %}aktif{% endif %}">Kotak Masuk</a>
+    <a href="/order" class="{% if halaman == 'order' %}aktif{% endif %}">Order</a>
+    <a href="/unggah" class="{% if halaman == 'unggah' %}aktif{% endif %}">Unggah</a>
+  {% endif %}
+  {% if user.role == 'admin' %}
+    <a href="/admin/pengguna" class="{% if halaman == 'pengguna' %}aktif{% endif %}">Pengguna</a>
+    <a href="/admin/audit" class="{% if halaman == 'audit' %}aktif{% endif %}">Jejak Audit</a>
+  {% endif %}
+  <span class="sisi-kanan">
+    <span class="pemakai"><strong>{{ user.full_name }}</strong> · {{ user.role_label }}</span>
+    <a href="/keluar">Keluar</a>
+  </span>
+</nav>
+{% endif %}
+
+<main>
+  {% block isi %}{% endblock %}
+</main>
+
+<footer>
+  <span>{{ hospital_name }} · Instalasi Radiologi</span>
+  <span class="rscpl-tagline">The Era of Ultimate Excellence</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+# PACS + RIS RS USU — konfigurasi layanan
+#
+# Semua layanan berada di satu jaringan internal. Hanya Caddy yang membuka port
+# ke jaringan RS; Orthanc dan PostgreSQL TIDAK pernah diekspos langsung.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: orthanc
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./postgres/init-ris-db.sql:/docker-entrypoint-initdb.d/10-init-ris-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d orthanc"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  orthanc:
+    image: orthancteam/orthanc:25.1.0
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ORTHANC__POSTGRESQL__USERNAME: ${POSTGRES_USER}
+      ORTHANC__POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD}
+      # Viewer OHIF disertakan sebagai plugin Orthanc, bukan kontainer sendiri:
+      # satu asal (origin) dengan RIS, sehingga sesi login yang sama berlaku dan
+      # tidak ada masalah cookie lintas-port.
+      OHIF_PLUGIN_ENABLED: "true"
+      DICOM_WEB_PLUGIN_ENABLED: "true"
+    volumes:
+      - ./orthanc/orthanc.json:/etc/orthanc/orthanc.json:ro
+      - orthanc-storage:/var/lib/orthanc/db
+    ports:
+      # Port DICOM C-STORE. Inilah yang dipakai alat radiologi untuk mengirim citra —
+      # termasuk saat kita mengambil alih IP/AE Title tujuan lama tanpa menyentuh alat.
+      - "${DICOM_PORT:-4242}:4242"
+
+  ris:
+    build: ./ris
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/ris
+      ORTHANC_URL: http://orthanc:8042
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      HOSPITAL_NAME: ${HOSPITAL_NAME:-RS Universitas Sumatera Utara}
+      INGEST_TOKEN: ${INGEST_TOKEN}
+    volumes:
+      - ris-uploads:/data/uploads
+
+  watcher:
+    build: ./watcher
+    restart: unless-stopped
+    depends_on:
+      - ris
+    environment:
+      RIS_URL: http://ris:8000
+      INGEST_TOKEN: ${INGEST_TOKEN}
+      WATCH_DIR: /data/watch
+      PROCESSED_DIR: /data/processed
+      QUARANTINE_DIR: /data/quarantine
+      POLL_SECONDS: "5"
+      STABLE_SECONDS: "3"
+    volumes:
+      # Folder ini yang dipetakan ke share jaringan PC akuisisi radiologi.
+      - ./data/watch:/data/watch
+      - ./data/processed:/data/processed
+      - ./data/quarantine:/data/quarantine
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - ris
+      - orthanc
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
+
+volumes:
+  pg-data:
+  orthanc-storage:
+  ris-uploads:
+  caddy-data:
+  caddy-config:

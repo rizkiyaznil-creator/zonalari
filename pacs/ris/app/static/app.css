@@ -1,0 +1,131 @@
+/* Gaya aplikasi RIS. Warna dan bentuk selalu lewat token --rscpl-* dari
+   tokens.css — jangan menulis hex langsung di sini. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--rscpl-cream);
+  color: var(--rscpl-ink);
+  font-family: var(--rscpl-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--rscpl-coral-600); }
+
+/* --- Kop --------------------------------------------------------------- */
+.rscpl-header {
+  background: var(--rscpl-surface);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 28px; flex-wrap: wrap;
+  padding: 14px 28px;
+  border-bottom: 3px solid var(--rscpl-coral);
+  box-shadow: 0 3px 14px -8px rgba(217, 87, 63, .35);
+}
+.rscpl-brand { display: flex; flex-direction: column; gap: 3px; }
+.rscpl-header h1 { font-size: 20px; font-weight: 800; letter-spacing: -.2px; }
+.rscpl-header h1 .mark { color: var(--rscpl-coral); }
+.rscpl-header p { font-size: 11.5px; font-weight: 600; color: var(--rscpl-muted); }
+.rscpl-tagline { font-size: 12px; }
+.rscpl-logos { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+.rscpl-logos img { height: 50px; width: auto; display: block; }
+.rscpl-logos img:last-child { height: 42px; }
+
+/* --- Navigasi ----------------------------------------------------------- */
+nav {
+  background: var(--rscpl-surface);
+  border-bottom: 1px solid var(--rscpl-line);
+  padding: 0 28px;
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+}
+nav a {
+  padding: 11px 14px; font-size: 13px; font-weight: 700;
+  color: var(--rscpl-muted); text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+nav a:hover { color: var(--rscpl-coral-600); background: var(--rscpl-tint); }
+nav a.aktif { color: var(--rscpl-coral-600); border-bottom-color: var(--rscpl-coral); }
+nav .sisi-kanan { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+nav .pemakai { font-size: 12px; color: var(--rscpl-muted); }
+nav .pemakai strong { color: var(--rscpl-ink); }
+
+main { flex: 1; padding: 22px 28px 40px; max-width: 1280px; width: 100%; margin: 0 auto; }
+
+h2 { font-size: 17px; font-weight: 800; margin-bottom: 14px; }
+h3 { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+
+/* --- Kartu & kisi ------------------------------------------------------- */
+.kisi { display: grid; gap: 16px; }
+.kisi--3 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.kisi--2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+.angka-besar { font-size: 34px; font-weight: 800; line-height: 1.1; }
+.angka-besar small { display: block; font-size: 12px; font-weight: 600; color: var(--rscpl-muted); margin-top: 4px; }
+
+/* --- Tabel -------------------------------------------------------------- */
+.bungkus-tabel { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--rscpl-line); vertical-align: top; }
+th {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  color: #6B615A; font-weight: 700; white-space: nowrap;
+}
+tbody tr:hover { background: var(--rscpl-tint); }
+td.angka { font-variant-numeric: tabular-nums; }
+.kosong { padding: 28px; text-align: center; color: var(--rscpl-muted); }
+
+/* --- Status ------------------------------------------------------------- */
+.pil {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 9px; border-radius: 10px; white-space: nowrap;
+}
+.pil--belum { background: #FDF0D5; color: #8A6400; }
+.pil--ok    { background: #E3F1E6; color: var(--rscpl-ok); }
+.pil--tolak { background: #F7DDDF; color: var(--rscpl-danger-600); }
+.pil--netral{ background: var(--rscpl-cream-soft); color: #6B615A; }
+
+/* --- Formulir ----------------------------------------------------------- */
+.bidang { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.baris-tombol { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+form.sebaris { display: inline; }
+
+.pesan {
+  padding: 11px 14px; border-radius: var(--rscpl-radius);
+  margin-bottom: 16px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--rscpl-line); background: var(--rscpl-card);
+}
+.pesan--ok { border-color: #BFE0C6; background: #F1F9F2; color: var(--rscpl-ok); }
+.pesan--galat { border-color: #EECBC3; background: #FDF3F2; color: var(--rscpl-danger-600); }
+.pesan--ingat { border-left: 4px solid var(--rscpl-coral); }
+
+/* --- Perbandingan identitas lama vs baru -------------------------------- */
+.identitas { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.identitas > div { background: var(--rscpl-cream-soft); border-radius: 8px; padding: 12px 14px; }
+.identitas dt { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6B615A; font-weight: 700; margin-top: 7px; }
+.identitas dt:first-child { margin-top: 0; }
+.identitas dd { font-size: 13px; font-weight: 600; word-break: break-word; }
+
+.skor {
+  display: inline-block; min-width: 42px; text-align: center;
+  font-weight: 800; font-size: 13px; padding: 2px 8px; border-radius: 8px;
+  background: var(--rscpl-coral-100); color: var(--rscpl-coral-600);
+}
+.alasan { font-size: 11.5px; color: var(--rscpl-muted); }
+
+footer {
+  background: var(--rscpl-coral-100);
+  padding: 14px 28px; font-size: 11.5px; color: #7A5247;
+  display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .rscpl-header { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px 18px; }
+  .rscpl-logos { justify-content: center; }
+  .rscpl-logos img { height: 42px; }
+  .rscpl-logos img:last-child { height: 36px; }
+  nav, main, footer { padding-left: 16px; padding-right: 16px; }
+  .identitas { grid-template-columns: 1fr; }
+}

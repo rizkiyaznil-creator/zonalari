@@ -1,0 +1,45 @@
+# Satu-satunya pintu masuk dari jaringan RS.
+#
+# Tiga hal yang dikerjakan berkas ini:
+#   1. Melayani aplikasi RIS di "/"
+#   2. Meneruskan DICOMweb dan Stone Web Viewer ke Orthanc, TETAPI hanya setelah
+#      RIS memastikan pengunjung sudah login (forward_auth). Tanpa gerbang ini
+#      siapa pun di jaringan RS bisa mengunduh citra pasien tanpa akun.
+#   3. Menutup antarmuka admin Orthanc dari jaringan RS.
+#
+# Untuk produksi: ganti ":8080" dengan nama domain RS agar Caddy menerbitkan
+# sertifikat TLS otomatis, lalu hapus "auto_https off".
+
+{
+	auto_https off
+	admin off
+}
+
+:8080 {
+	encode gzip
+
+	# --- Antarmuka admin Orthanc: ditutup rapat ---------------------------
+	# Orthanc Explorer memungkinkan hapus/ubah study tanpa jejak audit RIS.
+	# Harus memakai `handle` (bukan `respond` lepas) agar ikut urutan blok di
+	# bawah — `respond` lepas dievaluasi setelah `handle`, sehingga tidak pernah
+	# kena.
+	@orthanc_admin path /app* /ui* /tools/* /patients* /studies* /series* /instances*
+	handle @orthanc_admin {
+		respond "Akses langsung ke Orthanc ditutup. Gunakan aplikasi RIS." 403
+	}
+
+	# --- Citra: wajib punya sesi login yang sah ---------------------------
+	@citra path /dicom-web/* /wado* /ohif /ohif/*
+	handle @citra {
+		forward_auth ris:8000 {
+			uri /internal/authz
+			copy_headers X-Auth-User X-Auth-Role
+		}
+		reverse_proxy orthanc:8042
+	}
+
+	# --- Aplikasi RIS -----------------------------------------------------
+	handle {
+		reverse_proxy ris:8000
+	}
+}
