@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block judul %}Pasien{% endblock %}
+{% set halaman = 'pasien' %}
+
+{% block isi %}
+<h2>Pasien</h2>
+
+<form method="get" action="/pasien" style="margin-bottom:16px;">
+  <div class="baris-tombol">
+    <input class="rscpl-input" name="q" value="{{ kata }}" style="max-width:360px;"
+           placeholder="Cari nama atau nomor rekam medis" autofocus>
+    <button class="rscpl-btn rscpl-btn--primary" type="submit">Cari</button>
+    {% if kata %}<a class="rscpl-btn rscpl-btn--ghost" href="/pasien">Hapus filter</a>{% endif %}
+  </div>
+</form>
+
+<div class="kisi kisi--2">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">{{ pasien|length }} pasien</div>
+    <div class="bungkus-tabel">
+      <table>
+        <thead><tr><th>Nama</th><th>No. RM</th><th>G/P/A</th><th class="angka">Pemeriksaan</th><th></th></tr></thead>
+        <tbody>
+        {% for ps in pasien %}
+          <tr>
+            <td><strong>{{ ps.name }}</strong><br><span class="alasan">{{ ps.birth_date|umur }}</span></td>
+            <td>{{ ps.mrn }}</td>
+            <td>{{ ps.gpa }}</td>
+            <td class="angka">{{ jumlah_pemeriksaan.get(ps.id, 0) }}</td>
+            <td><a class="rscpl-btn rscpl-btn--outline" href="/pasien/{{ ps.id }}">Buka</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="kosong">
+            {% if kata %}Tidak ada hasil untuk "{{ kata }}".{% else %}Belum ada pasien terdaftar.{% endif %}
+          </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Daftarkan pasien baru</div>
+    <div class="rscpl-card__body">
+      <form method="post" action="/pasien">
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="mrn">No. rekam medis <span class="rscpl-badge rscpl-badge--required">wajib</span></label>
+            <input class="rscpl-input" id="mrn" name="mrn" required>
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="birth_date">Tanggal lahir</label>
+            <input class="rscpl-input" id="birth_date" name="birth_date" type="date">
+          </div>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="name">Nama <span class="rscpl-badge rscpl-badge--required">wajib</span></label>
+          <input class="rscpl-input" id="name" name="name" required>
+        </div>
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="gravida">Gravida</label>
+            <input class="rscpl-input" id="gravida" name="gravida" type="number" min="0" max="30">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="para">Para</label>
+            <input class="rscpl-input" id="para" name="para" type="number" min="0" max="30">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="abortus">Abortus</label>
+            <input class="rscpl-input" id="abortus" name="abortus" type="number" min="0" max="30">
+          </div>
+        </div>
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="hpht">HPHT</label>
+            <input class="rscpl-input" id="hpht" name="hpht" type="date">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="phone">Telepon</label>
+            <input class="rscpl-input" id="phone" name="phone">
+          </div>
+        </div>
+        <p style="font-size:11.5px;color:var(--rscpl-muted);margin-bottom:12px;">
+          HPHT dipakai menghitung usia kehamilan dan taksiran persalinan secara otomatis.
+          Bila tidak diketahui, usia kehamilan bisa diisi manual pada tiap pemeriksaan.
+        </p>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Daftarkan</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

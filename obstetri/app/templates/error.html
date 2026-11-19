@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block judul %}Galat {{ kode }}{% endblock %}
+
+{% block isi %}
+<div class="rscpl-card" style="max-width:520px;margin:40px auto;">
+  <div class="rscpl-card__head">Akses ditolak</div>
+  <div class="rscpl-card__body">
+    <p style="margin-bottom:14px;">{{ pesan }}</p>
+    <a class="rscpl-btn rscpl-btn--outline" href="/">Kembali ke beranda</a>
+  </div>
+</div>
+{% endblock %}

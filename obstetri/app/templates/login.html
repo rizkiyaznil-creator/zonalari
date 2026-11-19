@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block judul %}Masuk{% endblock %}
+
+{% block isi %}
+<div style="max-width:380px;margin:40px auto;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Masuk ke Sistem</div>
+    <div class="rscpl-card__body">
+      {% if galat %}<div class="pesan pesan--galat">{{ galat }}</div>{% endif %}
+      <form method="post" action="/masuk">
+        <div class="bidang">
+          <label class="rscpl-label" for="username">Nama pengguna</label>
+          <input class="rscpl-input" id="username" name="username" autocomplete="username" autofocus required>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="password">Kata sandi</label>
+          <input class="rscpl-input" id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit" style="width:100%;justify-content:center;">Masuk</button>
+      </form>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:14px;font-size:11.5px;color:var(--rscpl-muted);">
+    Setiap pembukaan data pasien dicatat dalam jejak audit.
+  </p>
+</div>
+{% endblock %}

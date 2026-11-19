@@ -1,0 +1,56 @@
+# Arsip Pemeriksaan Obstetri — CTG & USG
+#
+# Jauh lebih sederhana daripada pacs/: tidak ada server DICOM, tidak ada
+# protokol alat. CTG mengeluarkan PDF, dan PDF itulah yang diarsipkan.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: obstetri
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d obstetri"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: ./app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/obstetri
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      HOSPITAL_NAME: ${HOSPITAL_NAME:-RS Universitas Sumatera Utara}
+      UNIT_NAME: ${UNIT_NAME:-Instalasi Kebidanan dan Kandungan}
+      BERKAS_DIR: /data/berkas
+    volumes:
+      # Arsip berkas pemeriksaan. Inilah yang wajib ikut di-backup.
+      - berkas:/data/berkas
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "${HTTP_PORT:-8090}:8090"
+
+volumes:
+  pg-data:
+  berkas:
+  caddy-data:
+  caddy-config:

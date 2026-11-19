@@ -1,0 +1,15 @@
+# Rahasia dan data lokal — jangan pernah masuk ke git.
+.env
+data/
+berkas/
+
+# Berkas pemeriksaan contoh hasil tools/
+contoh/
+
+# Sertifikat proxy khusus lingkungan pengembangan.
+# Pola diawali ** agar juga berlaku untuk app/certs/, bukan hanya folder ini.
+**/certs/*.crt
+
+# Sampah Python
+__pycache__/
+*.py[cod]

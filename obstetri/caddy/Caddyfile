@@ -1,0 +1,20 @@
+# Satu-satunya pintu masuk.
+#
+# Untuk produksi: ganti ":8090" dengan nama domain, hapus "auto_https off",
+# lalu ubah https_only=True pada SessionMiddleware di app/main.py.
+
+{
+	auto_https off
+	admin off
+}
+
+:8090 {
+	encode gzip
+
+	# Berkas pemeriksaan berukuran besar; CTG satu jam bisa puluhan MB.
+	request_body {
+		max_size 200MB
+	}
+
+	reverse_proxy app:8000
+}

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block judul %}Pemeriksaan {{ pasien.name }}{% endblock %}
+{% set halaman = 'pasien' %}
+{% set terkunci = bacaan and bacaan.status == 'final' %}
+
+{% block isi %}
+<div class="pita-pasien">
+  <span class="nama">{{ pasien.name }}</span>
+  <span>RM <b>{{ pasien.mrn }}</b></span>
+  <span>Usia <b>{{ pasien.birth_date|umur }}</b></span>
+  <span>Obstetri <b>{{ pasien.gpa }}</b></span>
+  <span>Usia kehamilan <b>{{ p.usia_kehamilan_teks }}</b></span>
+  <span><a href="/pasien/{{ pasien.id }}">Lihat semua pemeriksaan</a></span>
+</div>
+
+<div class="baris-tombol" style="margin-bottom:16px;">
+  <h2 style="margin:0;flex:1;">{{ p.kind_label }} · {{ p.performed_at|tanggal_jam }}</h2>
+  <a class="rscpl-btn rscpl-btn--outline" href="/pemeriksaan/{{ p.id }}/cetak" target="_blank" rel="noopener">
+    Cetak lembar hasil
+  </a>
+</div>
+
+{% if terkunci %}
+<div class="pesan pesan--ok">
+  Hasil sudah disahkan oleh {{ bacaan.finalized_by.full_name if bacaan.finalized_by else '-' }}
+  pada {{ bacaan.finalized_at|tanggal_jam }}. Interpretasi terkunci.
+</div>
+{% endif %}
+
+<div class="rscpl-card" style="margin-bottom:18px;">
+  <div class="rscpl-card__head">Rekaman ({{ p.attachments|length }} berkas)</div>
+  <div class="rscpl-card__body">
+    {% if p.attachments %}
+      <div class="berkas-kisi" style="margin-bottom:16px;">
+        {% for l in p.attachments %}
+          <div class="berkas-kartu">
+            <a href="/berkas/{{ l.id }}" target="_blank" rel="noopener">
+              {% if l.thumbnail_name %}
+                <img src="/berkas/{{ l.id }}/pratinjau" alt="Pratinjau {{ l.original_name }}">
+              {% else %}
+                <div class="tanpa-gambar">Tanpa pratinjau</div>
+              {% endif %}
+            </a>
+            <div class="isi">
+              <strong>{{ l.original_name }}</strong>
+              <span class="alasan">
+                {{ l.ukuran_teks }}{% if l.page_count %} · {{ l.page_count }} halaman{% endif %}
+              </span>
+            </div>
+            <div class="kaki">
+              <a class="rscpl-btn rscpl-btn--outline" href="/berkas/{{ l.id }}" target="_blank" rel="noopener">Buka</a>
+              {% if not terkunci %}
+              <form class="sebaris" method="post" action="/lampiran/{{ l.id }}/hapus"
+                    onsubmit="return confirm('Hapus berkas {{ l.original_name }} dari arsip?');">
+                <button class="rscpl-btn rscpl-btn--ghost" type="submit">Hapus</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="kosong" style="padding:14px 0;">
+        Belum ada rekaman. Unggah PDF hasil CTG dari USB alat, atau gambar hasil USG.
+      </p>
+    {% endif %}
+
+    {% if not terkunci %}
+    <form method="post" action="/pemeriksaan/{{ p.id }}/lampiran" enctype="multipart/form-data">
+      <div class="baris-tombol">
+        <input class="rscpl-input" type="file" name="files" multiple required
+               accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+               style="max-width:420px;">
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Unggah</button>
+      </div>
+      <p style="font-size:11.5px;color:var(--rscpl-muted);margin-top:8px;">
+        Menerima PDF, JPG, dan PNG. Berkas asli dari alat disimpan apa adanya dan tidak diubah.
+      </p>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="rscpl-card">
+  <div class="rscpl-card__head">Interpretasi</div>
+  <div class="rscpl-card__body">
+    <form method="post" action="/pemeriksaan/{{ p.id }}/interpretasi">
+      <fieldset style="border:0;padding:0;" {% if terkunci %}disabled{% endif %}>
+        {% if p.kind == 'usg' %}
+          <p class="alasan" style="margin-bottom:12px;">
+            Pemeriksaan USG tidak memakai penilaian CTG. Tuliskan temuan pada kolom di bawah;
+            temuan wajib terisi sebelum hasil boleh disahkan.
+          </p>
+        {% else %}
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="baseline_bpm">Denyut jantung dasar (dpm)</label>
+            <input class="rscpl-input" id="baseline_bpm" name="baseline_bpm" type="number" min="30" max="250"
+                   value="{{ bacaan.baseline_bpm if bacaan and bacaan.baseline_bpm is not none else '' }}">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="variability">Variabilitas</label>
+            <select class="rscpl-input" id="variability" name="variability">
+              <option value="">—</option>
+              {% for kode, nama in pilihan_variabilitas.items() %}
+                <option value="{{ kode }}" {% if bacaan and bacaan.variability == kode %}selected{% endif %}>{{ nama }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="acceleration">Akselerasi</label>
+            <select class="rscpl-input" id="acceleration" name="acceleration">
+              <option value="">—</option>
+              {% for kode, nama in pilihan_akselerasi.items() %}
+                <option value="{{ kode }}" {% if bacaan and bacaan.acceleration == kode %}selected{% endif %}>{{ nama }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="deceleration">Deselerasi</label>
+            <select class="rscpl-input" id="deceleration" name="deceleration">
+              <option value="">—</option>
+              {% for kode, nama in pilihan_deselerasi.items() %}
+                <option value="{{ kode }}" {% if bacaan and bacaan.deceleration == kode %}selected{% endif %}>{{ nama }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="contractions_per10">Kontraksi / 10 menit</label>
+            <input class="rscpl-input" id="contractions_per10" name="contractions_per10" type="number" min="0" max="20"
+                   value="{{ bacaan.contractions_per10 if bacaan and bacaan.contractions_per10 is not none else '' }}">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="fetal_movement">Gerak janin</label>
+            <select class="rscpl-input" id="fetal_movement" name="fetal_movement">
+              <option value="">—</option>
+              {% for kode, nama in pilihan_gerak.items() %}
+                <option value="{{ kode }}" {% if bacaan and bacaan.fetal_movement == kode %}selected{% endif %}>{{ nama }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="duration_minutes">Lama rekaman (menit)</label>
+            <input class="rscpl-input" id="duration_minutes" name="duration_minutes" type="number" min="0" max="600"
+                   value="{{ bacaan.duration_minutes if bacaan and bacaan.duration_minutes is not none else '' }}">
+          </div>
+        </div>
+
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="conclusion">Kesimpulan NST</label>
+            <select class="rscpl-input" id="conclusion" name="conclusion">
+              <option value="">—</option>
+              {% for kode, nama in pilihan_kesimpulan.items() %}
+                <option value="{{ kode }}" {% if bacaan and bacaan.conclusion == kode %}selected{% endif %}>{{ nama }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="figo_category">Kategori FIGO</label>
+            <select class="rscpl-input" id="figo_category" name="figo_category">
+              <option value="">—</option>
+              {% for kode, nama in pilihan_figo.items() %}
+                <option value="{{ kode }}" {% if bacaan and bacaan.figo_category == kode %}selected{% endif %}>{{ nama }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="bidang">
+          <label class="rscpl-label" for="advice">Saran / tindak lanjut</label>
+          <textarea class="rscpl-input" id="advice" name="advice" rows="2">{{ bacaan.advice if bacaan else '' }}</textarea>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="note">
+            {% if p.kind == 'usg' %}Temuan <span class="rscpl-badge rscpl-badge--required">wajib</span>
+            {% else %}Catatan tambahan{% endif %}
+          </label>
+          <textarea class="rscpl-input" id="note" name="note"
+                    rows="{{ 6 if p.kind == 'usg' else 3 }}">{{ bacaan.note if bacaan else '' }}</textarea>
+        </div>
+
+        {% if not terkunci %}
+        <div class="baris-tombol">
+          <button class="rscpl-btn rscpl-btn--primary" type="submit">Simpan interpretasi</button>
+          <span class="alasan">Tersimpan sebagai draf. Pengesahan dilakukan terpisah.</span>
+        </div>
+        {% endif %}
+      </fieldset>
+    </form>
+
+    {% if bacaan and not terkunci %}
+      <hr style="border:0;border-top:1px solid var(--rscpl-line);margin:18px 0;">
+      {% if user.boleh_mengesahkan %}
+        <form method="post" action="/pemeriksaan/{{ p.id }}/sahkan"
+              onsubmit="return confirm('Sahkan hasil ini? Setelah disahkan, interpretasi terkunci.');">
+          <button class="rscpl-btn rscpl-btn--primary" type="submit">Sahkan hasil</button>
+          <span class="alasan" style="margin-left:10px;">
+            Pengesahan memerlukan kesimpulan terisi dan minimal satu rekaman terlampir.
+          </span>
+        </form>
+      {% else %}
+        <p class="alasan">
+          Interpretasi tersimpan sebagai draf. Pengesahan dilakukan oleh dokter.
+        </p>
+      {% endif %}
+    {% endif %}
+
+    {% if terkunci and user.boleh_mengesahkan %}
+      <hr style="border:0;border-top:1px solid var(--rscpl-line);margin:18px 0;">
+      <form method="post" action="/pemeriksaan/{{ p.id }}/buka-kembali">
+        <div class="bidang">
+          <label class="rscpl-label" for="alasan">Alasan membuka kembali <span class="rscpl-badge rscpl-badge--required">wajib</span></label>
+          <input class="rscpl-input" id="alasan" name="alasan" required
+                 placeholder="mis. koreksi kesimpulan setelah ditinjau ulang">
+        </div>
+        <button class="rscpl-btn rscpl-btn--danger" type="submit">Buka kembali untuk revisi</button>
+        <span class="alasan" style="margin-left:10px;">Alasan dicatat di jejak audit.</span>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block judul %}Impor dari USB{% endblock %}
+{% set halaman = 'impor' %}
+
+{% block isi %}
+<h2>Impor Rekaman dari USB</h2>
+
+<div class="rscpl-card" style="margin-bottom:18px;">
+  <div class="rscpl-card__head">Unggah berkas</div>
+  <div class="rscpl-card__body">
+    <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:12px;">
+      Colok USB alat CTG ke komputer ini, lalu pilih seluruh berkas rekaman sekaligus.
+      Berkas yang sudah pernah diimpor dikenali dari isinya dan tidak masuk dua kali,
+      jadi USB yang sama aman dicolok ulang.
+    </p>
+    <form method="post" action="/impor" enctype="multipart/form-data">
+      <div class="baris-tombol">
+        <input class="rscpl-input" type="file" name="files" multiple required
+               accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+               style="max-width:420px;">
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Unggah</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="rscpl-card">
+  <div class="rscpl-card__head">{{ menunggu|length }} berkas menunggu dicocokkan</div>
+  <div class="rscpl-card__body">
+    {% if menunggu %}
+      <div class="berkas-kisi">
+        {% for item in menunggu %}
+          <div class="berkas-kartu">
+            <a href="/impor/{{ item.id }}">
+              {% if item.thumbnail_name %}
+                <img src="/impor/{{ item.id }}/pratinjau" alt="Pratinjau {{ item.original_name }}">
+              {% else %}
+                <div class="tanpa-gambar">Tanpa pratinjau</div>
+              {% endif %}
+            </a>
+            <div class="isi">
+              <strong>{{ item.original_name }}</strong>
+              {% if item.hint_name %}
+                <span class="alasan">Nama di berkas: {{ item.hint_name }}</span><br>
+              {% endif %}
+              {% if item.hint_datetime %}
+                <span class="alasan">{{ item.hint_datetime|tanggal_jam }}</span>
+              {% endif %}
+            </div>
+            <div class="kaki">
+              <a class="rscpl-btn rscpl-btn--primary" href="/impor/{{ item.id }}">Cocokkan</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="kosong" style="padding:18px 0;">Tidak ada berkas yang menunggu.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

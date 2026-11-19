@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block judul %}Cocokkan Rekaman{% endblock %}
+{% set halaman = 'impor' %}
+
+{% block isi %}
+<h2>Cocokkan Rekaman dengan Pasien</h2>
+
+<div class="pesan pesan--ingat">
+  Nama yang tercetak pada rekaman berasal dari ketikan operator di alat, jadi belum tentu
+  sama dengan data pasien. Periksa rekamannya sebelum memilih.
+</div>
+
+<div class="kisi kisi--2" style="margin-bottom:18px;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Berkas</div>
+    <div class="rscpl-card__body">
+      <dl class="ringkas">
+        <dt>Nama berkas</dt><dd style="word-break:break-all;">{{ item.original_name }}</dd>
+        <dt>Nama di berkas</dt><dd>{{ item.hint_name or '(tidak terbaca)' }}</dd>
+        <dt>Waktu dari nama</dt><dd>{{ item.hint_datetime|tanggal_jam if item.hint_datetime else '(tidak terbaca)' }}</dd>
+        <dt>Halaman</dt><dd>{{ item.page_count or '-' }}</dd>
+      </dl>
+      <a class="rscpl-btn rscpl-btn--outline" style="margin-top:12px;"
+         href="/impor/{{ item.id }}/berkas" target="_blank" rel="noopener">Buka rekaman</a>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Pratinjau</div>
+    <div class="rscpl-card__body" style="text-align:center;">
+      {% if item.thumbnail_name %}
+        <a href="/impor/{{ item.id }}/berkas" target="_blank" rel="noopener">
+          <img src="/impor/{{ item.id }}/pratinjau" alt="Pratinjau rekaman"
+               style="max-width:100%;border:1px solid var(--rscpl-line);border-radius:8px;">
+        </a>
+      {% else %}
+        <p class="kosong">Tidak ada pratinjau untuk berkas ini.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if saran %}
+<div class="rscpl-card" style="margin-bottom:18px;">
+  <div class="rscpl-card__head">Pasien yang mungkin cocok</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead><tr><th>Kecocokan</th><th>Pasien</th><th>No. RM</th><th>G/P/A</th></tr></thead>
+      <tbody>
+      {% for s in saran %}
+        <tr>
+          <td><span class="skor">{{ s.skor }}</span><br><span class="alasan">{{ s.alasan|join(', ') }}</span></td>
+          <td><strong>{{ s.pasien.name }}</strong></td>
+          <td>{{ s.pasien.mrn }}</td>
+          <td>{{ s.pasien.gpa }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="rscpl-card__body" style="padding-top:0;">
+    <p class="alasan">Angka kecocokan hanya alat bantu urut. Pilih pasiennya di bawah.</p>
+  </div>
+</div>
+{% endif %}
+
+<div class="kisi kisi--2">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Tempelkan ke pasien</div>
+    <div class="rscpl-card__body">
+      <form method="post" action="/impor/{{ item.id }}/cocokkan">
+        <div class="bidang">
+          <label class="rscpl-label" for="patient_id">Pasien</label>
+          <select class="rscpl-input" id="patient_id" name="patient_id" required>
+            <option value="">— pilih pasien —</option>
+            {% for ps in semua_pasien %}
+              <option value="{{ ps.id }}">{{ ps.name }} · RM {{ ps.mrn }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="kind">Jenis pemeriksaan</label>
+          <select class="rscpl-input" id="kind" name="kind" required>
+            {% for kode, nama in jenis_pemeriksaan.items() %}
+              <option value="{{ kode }}">{{ nama }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="performed_at">Waktu pemeriksaan</label>
+          <input class="rscpl-input" id="performed_at" name="performed_at" type="datetime-local"
+                 value="{{ sekarang }}" required>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="indication">Indikasi</label>
+          <input class="rscpl-input" id="indication" name="indication">
+        </div>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Cocokkan</button>
+      </form>
+      <p class="alasan" style="margin-top:10px;">
+        Pasien belum terdaftar? <a href="/pasien">Daftarkan lebih dulu</a>, lalu kembali ke sini.
+      </p>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Bukan rekaman pasien</div>
+    <div class="rscpl-card__body">
+      <p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:10px;">
+        Untuk uji alat, rekaman kosong, atau berkas rusak. Berkasnya tidak dihapus,
+        hanya dikeluarkan dari antrean.
+      </p>
+      <form method="post" action="/impor/{{ item.id }}/tolak">
+        <div class="bidang">
+          <label class="rscpl-label" for="alasan">Alasan</label>
+          <input class="rscpl-input" id="alasan" name="alasan" required placeholder="mis. uji alat">
+        </div>
+        <button class="rscpl-btn rscpl-btn--danger" type="submit">Tandai bukan rekaman pasien</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

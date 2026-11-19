@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block judul %}Jejak Audit{% endblock %}
+{% set halaman = 'audit' %}
+
+{% block isi %}
+<h2>Jejak Audit</h2>
+
+<p style="font-size:12.5px;color:var(--rscpl-muted);margin-bottom:14px;">
+  300 peristiwa terakhir. Setiap pembukaan data pasien, perubahan identitas, dan
+  keluar-masuk akun tercatat di sini.
+</p>
+
+<div class="rscpl-card">
+  <div class="rscpl-card__head">Peristiwa</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead><tr><th>Waktu</th><th>Pengguna</th><th>Tindakan</th><th>Objek</th><th>Rincian</th><th>IP</th></tr></thead>
+      <tbody>
+      {% for b in baris %}
+        <tr>
+          <td>{{ b.ts.strftime('%d-%m-%Y %H:%M:%S') }}</td>
+          <td>{{ b.username }}<br><span class="alasan">{{ b.role }}</span></td>
+          <td><code>{{ b.action }}</code></td>
+          <td style="max-width:200px;word-break:break-all;"><span class="alasan">{{ b.object_id }}</span></td>
+          <td style="max-width:420px;">
+            {% if b.detail %}<span class="alasan">{{ b.detail }}</span>{% else %}-{% endif %}
+          </td>
+          <td><span class="alasan">{{ b.ip or '-' }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="kosong">Belum ada peristiwa.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

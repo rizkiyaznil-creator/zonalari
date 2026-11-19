@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block judul %}{{ pasien.name }}{% endblock %}
+{% set halaman = 'pasien' %}
+
+{% block isi %}
+<div class="pita-pasien">
+  <span class="nama">{{ pasien.name }}</span>
+  <span>RM <b>{{ pasien.mrn }}</b></span>
+  <span>Usia <b>{{ pasien.birth_date|umur }}</b></span>
+  <span>Obstetri <b>{{ pasien.gpa }}</b></span>
+  {% if pasien.hpht %}
+    <span>HPHT <b>{{ pasien.hpht|tanggal }}</b></span>
+    <span>Taksiran persalinan <b>{{ pasien.taksiran_persalinan|tanggal }}</b></span>
+    {% set uk = pasien.usia_kehamilan(hari_ini) %}
+    {% if uk %}<span>Usia kehamilan hari ini <b>{{ uk[0] }} mg {{ uk[1] }} hr</b></span>{% endif %}
+  {% endif %}
+</div>
+
+<div class="kisi kisi--2" style="margin-bottom:18px;">
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Pemeriksaan baru</div>
+    <div class="rscpl-card__body">
+      <form method="post" action="/pasien/{{ pasien.id }}/pemeriksaan">
+        <div class="bidang">
+          <label class="rscpl-label" for="kind">Jenis</label>
+          <select class="rscpl-input" id="kind" name="kind" required>
+            {% for kode, nama in jenis_pemeriksaan.items() %}
+              <option value="{{ kode }}">{{ nama }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="performed_at">Waktu pemeriksaan</label>
+          <input class="rscpl-input" id="performed_at" name="performed_at" type="datetime-local" required>
+        </div>
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="gestational_weeks">Usia kehamilan (minggu)</label>
+            <input class="rscpl-input" id="gestational_weeks" name="gestational_weeks" type="number" min="0" max="45"
+                   placeholder="otomatis dari HPHT">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="gestational_days">Hari</label>
+            <input class="rscpl-input" id="gestational_days" name="gestational_days" type="number" min="0" max="6">
+          </div>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="indication">Indikasi</label>
+          <input class="rscpl-input" id="indication" name="indication" placeholder="mis. penurunan gerak janin">
+        </div>
+        <button class="rscpl-btn rscpl-btn--primary" type="submit">Buat pemeriksaan</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="rscpl-card">
+    <div class="rscpl-card__head">Data pasien</div>
+    <div class="rscpl-card__body">
+      <form method="post" action="/pasien/{{ pasien.id }}/ubah">
+        <div class="bidang">
+          <label class="rscpl-label" for="e_name">Nama</label>
+          <input class="rscpl-input" id="e_name" name="name" value="{{ pasien.name }}" required>
+        </div>
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="e_birth">Tanggal lahir</label>
+            <input class="rscpl-input" id="e_birth" name="birth_date" type="date"
+                   value="{{ pasien.birth_date.isoformat() if pasien.birth_date else '' }}">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="e_hpht">HPHT</label>
+            <input class="rscpl-input" id="e_hpht" name="hpht" type="date"
+                   value="{{ pasien.hpht.isoformat() if pasien.hpht else '' }}">
+          </div>
+        </div>
+        <div class="bidang-baris">
+          <div class="bidang">
+            <label class="rscpl-label" for="e_g">Gravida</label>
+            <input class="rscpl-input" id="e_g" name="gravida" type="number" min="0" max="30"
+                   value="{{ pasien.gravida if pasien.gravida is not none else '' }}">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="e_p">Para</label>
+            <input class="rscpl-input" id="e_p" name="para" type="number" min="0" max="30"
+                   value="{{ pasien.para if pasien.para is not none else '' }}">
+          </div>
+          <div class="bidang">
+            <label class="rscpl-label" for="e_a">Abortus</label>
+            <input class="rscpl-input" id="e_a" name="abortus" type="number" min="0" max="30"
+                   value="{{ pasien.abortus if pasien.abortus is not none else '' }}">
+          </div>
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="e_phone">Telepon</label>
+          <input class="rscpl-input" id="e_phone" name="phone" value="{{ pasien.phone }}">
+        </div>
+        <div class="bidang">
+          <label class="rscpl-label" for="e_note">Catatan</label>
+          <textarea class="rscpl-input" id="e_note" name="note" rows="2">{{ pasien.note }}</textarea>
+        </div>
+        <button class="rscpl-btn rscpl-btn--outline" type="submit">Simpan perubahan</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="rscpl-card">
+  <div class="rscpl-card__head">Riwayat pemeriksaan ({{ pasien.examinations|length }})</div>
+  <div class="bungkus-tabel">
+    <table>
+      <thead><tr><th>Waktu</th><th>Jenis</th><th>Usia kehamilan</th><th>Indikasi</th><th>Kesimpulan</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for p in pasien.examinations %}
+        <tr>
+          <td>{{ p.performed_at|tanggal_jam }}</td>
+          <td>{{ p.kind_label }}</td>
+          <td>{{ p.usia_kehamilan_teks }}</td>
+          <td>{{ p.indication or '-' }}</td>
+          <td>{% if p.reading %}{{ p.reading.label('conclusion') }}{% else %}-{% endif %}</td>
+          <td>
+            {% if p.reading and p.reading.status == 'final' %}<span class="pil pil--ok">Disahkan</span>
+            {% elif p.reading %}<span class="pil pil--belum">Draf</span>
+            {% else %}<span class="pil pil--netral">Belum dibaca</span>{% endif %}
+          </td>
+          <td><a class="rscpl-btn rscpl-btn--outline" href="/pemeriksaan/{{ p.id }}">Buka</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="kosong">Belum ada pemeriksaan untuk pasien ini.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

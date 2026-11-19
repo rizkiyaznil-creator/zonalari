@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block judul %}Arsip Obstetri{% endblock %} · {{ hospital_name }}</title>
+  <link rel="stylesheet" href="/static/tokens.css">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+<header class="rscpl-header">
+  <div class="rscpl-brand">
+    <h1><span class="mark">⚕</span> Arsip Pemeriksaan Obstetri</h1>
+    <p>{{ unit_name }} · {{ hospital_name }}</p>
+    <span class="rscpl-tagline">Quality, Safety and Friendly Hospital</span>
+  </div>
+  <div class="rscpl-logos">
+    <img src="/static/img/logo-usu.png" alt="Universitas Sumatera Utara">
+    <img src="/static/img/logo-rs-cpl.png" alt="RS Prof. Dr. Chairuddin P. Lubis">
+    <img src="/static/img/logo-era-excellence.png" alt="The Era of Ultimate Excellence">
+  </div>
+</header>
+
+{% if user %}
+<nav>
+  <a href="/" class="{% if halaman == 'beranda' %}aktif{% endif %}">Beranda</a>
+  <a href="/pasien" class="{% if halaman == 'pasien' %}aktif{% endif %}">Pasien</a>
+  <a href="/impor" class="{% if halaman == 'impor' %}aktif{% endif %}">Impor dari USB</a>
+  {% if user.role == 'admin' %}
+    <a href="/admin/pengguna" class="{% if halaman == 'pengguna' %}aktif{% endif %}">Pengguna</a>
+    <a href="/admin/audit" class="{% if halaman == 'audit' %}aktif{% endif %}">Jejak Audit</a>
+  {% endif %}
+  <span class="sisi-kanan">
+    <span class="pemakai"><strong>{{ user.full_name }}</strong> · {{ user.role_label }}</span>
+    <a href="/keluar">Keluar</a>
+  </span>
+</nav>
+{% endif %}
+
+<main>
+  {% if pesan %}<div class="pesan pesan--ok">{{ pesan }}</div>{% endif %}
+  {% if galat %}<div class="pesan pesan--galat">{{ galat }}</div>{% endif %}
+  {% block isi %}{% endblock %}
+</main>
+
+<footer>
+  <span>{{ hospital_name }} · {{ unit_name }}</span>
+  <span class="rscpl-tagline">The Era of Ultimate Excellence</span>
+</footer>
+
+</body>
+</html>

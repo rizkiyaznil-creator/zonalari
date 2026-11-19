@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block judul %}Lembar Hasil{% endblock %}
+
+{% block isi %}
+<div class="baris-tombol tanpa-cetak" style="margin-bottom:16px;">
+  <button class="rscpl-btn rscpl-btn--primary" onclick="window.print()">Cetak / simpan PDF</button>
+  <a class="rscpl-btn rscpl-btn--ghost" href="/pemeriksaan/{{ p.id }}">Kembali</a>
+</div>
+
+<div class="lembar">
+  <div class="lembar-kop">
+    <div>
+      <h1>{{ hospital_name }}</h1>
+      <p>{{ unit_name }}</p>
+      <span class="rscpl-tagline" style="font-size:11px;">Quality, Safety and Friendly Hospital</span>
+    </div>
+    <div class="logo">
+      <img src="/static/img/logo-usu.png" alt="USU">
+      <img src="/static/img/logo-rs-cpl.png" alt="RS CPL">
+    </div>
+  </div>
+
+  <h2>Hasil Pemeriksaan {{ p.kind_label }}</h2>
+
+  <dl class="ringkas" style="margin-bottom:18px;">
+    <dt>Nama pasien</dt><dd>{{ pasien.name }}</dd>
+    <dt>No. rekam medis</dt><dd>{{ pasien.mrn }}</dd>
+    <dt>Tanggal lahir</dt><dd>{{ pasien.birth_date|tanggal }} ({{ pasien.birth_date|umur }})</dd>
+    <dt>Obstetri</dt><dd>{{ pasien.gpa }}</dd>
+    {% if pasien.hpht %}
+      <dt>HPHT</dt><dd>{{ pasien.hpht|tanggal }}</dd>
+      <dt>Taksiran persalinan</dt><dd>{{ pasien.taksiran_persalinan|tanggal }}</dd>
+    {% endif %}
+    <dt>Waktu pemeriksaan</dt><dd>{{ p.performed_at|tanggal_jam }}</dd>
+    <dt>Usia kehamilan</dt><dd>{{ p.usia_kehamilan_teks }}</dd>
+    <dt>Indikasi</dt><dd>{{ p.indication or '-' }}</dd>
+  </dl>
+
+  {% if bacaan %}
+  {% if p.kind == 'usg' %}
+  <p style="margin-bottom:12px;"><strong>Temuan:</strong><br>{{ bacaan.note or '-' }}</p>
+  {% else %}
+  <table style="margin-bottom:16px;">
+    <tbody>
+      <tr><th style="width:42%;">Denyut jantung dasar</th>
+          <td>{{ bacaan.baseline_bpm ~ ' dpm' if bacaan.baseline_bpm else '-' }}</td></tr>
+      <tr><th>Variabilitas</th><td>{{ bacaan.label('variability') }}</td></tr>
+      <tr><th>Akselerasi</th><td>{{ bacaan.label('acceleration') }}</td></tr>
+      <tr><th>Deselerasi</th><td>{{ bacaan.label('deceleration') }}</td></tr>
+      <tr><th>Kontraksi per 10 menit</th>
+          <td>{{ bacaan.contractions_per10 if bacaan.contractions_per10 is not none else '-' }}</td></tr>
+      <tr><th>Gerak janin</th><td>{{ bacaan.label('fetal_movement') }}</td></tr>
+      <tr><th>Lama rekaman</th>
+          <td>{{ bacaan.duration_minutes ~ ' menit' if bacaan.duration_minutes else '-' }}</td></tr>
+      <tr><th>Kesimpulan NST</th><td><strong>{{ bacaan.label('conclusion') }}</strong></td></tr>
+      <tr><th>Kategori FIGO</th><td><strong>{{ bacaan.label('figo_category') }}</strong></td></tr>
+    </tbody>
+  </table>
+  {% if bacaan.note %}
+    <p style="margin-bottom:10px;"><strong>Catatan:</strong><br>{{ bacaan.note }}</p>
+  {% endif %}
+  {% endif %}
+
+  {% if bacaan.advice %}
+    <p style="margin-bottom:10px;"><strong>Saran / tindak lanjut:</strong><br>{{ bacaan.advice }}</p>
+  {% endif %}
+
+  {% if bacaan.status != 'final' %}
+    <p style="color:var(--rscpl-danger);font-weight:700;margin-top:14px;">
+      DRAF — belum disahkan dokter.
+    </p>
+  {% endif %}
+  {% else %}
+    <p style="color:var(--rscpl-danger);font-weight:700;">Interpretasi belum diisi.</p>
+  {% endif %}
+
+  <p style="margin-top:16px;font-size:12px;color:var(--rscpl-muted);">
+    Rekaman terlampir: {{ p.attachments|length }} berkas.
+  </p>
+
+  <div class="lembar-ttd">
+    <div>
+      <div>Medan, {{ dicetak_pada|tanggal }}</div>
+      <div class="ruang"></div>
+      {% if bacaan and bacaan.status == 'final' and bacaan.finalized_by %}
+        <div style="border-top:1px solid var(--rscpl-ink);padding-top:4px;">
+          <strong>{{ bacaan.finalized_by.full_name }}</strong><br>
+          <span style="font-size:11px;">Disahkan {{ bacaan.finalized_at|tanggal_jam }}</span>
+        </div>
+      {% else %}
+        <div style="border-top:1px solid var(--rscpl-ink);padding-top:4px;">
+          (................................)
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="lembar-catatan">
+    Dicetak dari Arsip Pemeriksaan Obstetri pada {{ dicetak_pada|tanggal_jam }} oleh {{ user.full_name }}.
+    Lembar ini merupakan ringkasan; rekaman asli tersimpan dalam arsip elektronik.
+  </div>
+</div>
+{% endblock %}
